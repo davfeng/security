@@ -374,4 +374,94 @@ LPSTR GetLastErrorText()
 
     return szMsgBuf;
 }
+void DumpACL(PACL pACL) {
+    __try {
+        if (pACL == NULL) {
+            _tprintf(TEXT("NULL DACL\n"));
+            __leave;
+        }
+
+        ACL_SIZE_INFORMATION aclSize = { 0 };
+        if (!GetAclInformation(pACL, &aclSize, sizeof(aclSize),
+            AclSizeInformation))
+            __leave;
+        _tprintf(TEXT("ACL ACE count: %d\n"), aclSize.AceCount);
+
+        struct {
+            BYTE  lACEType;
+            PTSTR pszTypeName;
+        }aceTypes[6] = {
+            { ACCESS_ALLOWED_ACE_TYPE, TEXT("ACCESS_ALLOWED_ACE_TYPE") },
+            { ACCESS_DENIED_ACE_TYPE, TEXT("ACCESS_DENIED_ACE_TYPE") },
+            { SYSTEM_AUDIT_ACE_TYPE, TEXT("SYSTEM_AUDIT_ACE_TYPE") },
+            { ACCESS_ALLOWED_OBJECT_ACE_TYPE,
+            TEXT("ACCESS_ALLOWED_OBJECT_ACE_TYPE") },
+            { ACCESS_DENIED_OBJECT_ACE_TYPE,
+            TEXT("ACCESS_DENIED_OBJECT_ACE_TYPE") },
+            { SYSTEM_AUDIT_OBJECT_ACE_TYPE,
+            TEXT("SYSTEM_AUDIT_OBJECT_ACE_TYPE") } };
+
+        struct {
+            ULONG lACEFlag;
+            PTSTR pszFlagName;
+        }aceFlags[7] = {
+            { INHERITED_ACE, TEXT("INHERITED_ACE") },
+            { CONTAINER_INHERIT_ACE, TEXT("CONTAINER_INHERIT_ACE") },
+            { OBJECT_INHERIT_ACE, TEXT("OBJECT_INHERIT_ACE") },
+            { INHERIT_ONLY_ACE, TEXT("INHERIT_ONLY_ACE") },
+            { NO_PROPAGATE_INHERIT_ACE, TEXT("NO_PROPAGATE_INHERIT_ACE") },
+            { FAILED_ACCESS_ACE_FLAG, TEXT("FAILED_ACCESS_ACE_FLAG") },
+            { SUCCESSFUL_ACCESS_ACE_FLAG,
+            TEXT("SUCCESSFUL_ACCESS_ACE_FLAG") } };
+
+        for (ULONG lIndex = 0; lIndex < aclSize.AceCount; lIndex++) {
+            ACCESS_ALLOWED_ACE* pACE;
+            if (!GetAce(pACL, lIndex, (PVOID*)&pACE))
+                __leave;
+
+            _tprintf(TEXT("\nACE #%d\n"), lIndex);
+
+            ULONG lIndex2 = 6;
+            PTSTR pszString = TEXT("Unknown ACE Type");
+            while (lIndex2--) {
+                if (pACE->Header.AceType == aceTypes[lIndex2].lACEType) {
+                    pszString = aceTypes[lIndex2].pszTypeName;
+                }
+            }
+            _tprintf(TEXT("  ACE Type =\n  \t%s\n"), pszString);
+
+            _tprintf(TEXT("  ACE Flags = \n"));
+            lIndex2 = 7;
+            while (lIndex2--) {
+                if ((pACE->Header.AceFlags & aceFlags[lIndex2].lACEFlag)
+                    != 0)
+                    _tprintf(TEXT("  \t%s\n"),
+                        aceFlags[lIndex2].pszFlagName);
+            }
+
+            _tprintf(TEXT("  ACE Mask (32->0) =\n  \t"));
+            lIndex2 = (ULONG)1 << 31;
+            while (lIndex2) {
+                _tprintf(((pACE->Mask & lIndex2) != 0) ? TEXT("1") : TEXT("0"));
+                lIndex2 >>= 1;
+            }
+
+            TCHAR szName[1024];
+            TCHAR szDom[1024];
+            PSID pSID = PSIDFromPACE(pACE);
+            SID_NAME_USE sidUse;
+            ULONG lLen1 = 1024, lLen2 = 1024;
+            if (!LookupAccountSid(NULL, pSID,
+                szName, &lLen1, szDom, &lLen2, &sidUse))
+                lstrcpy(szName, TEXT("Unknown"));
+            PTSTR pszSID;
+            if (!ConvertSidToStringSid(pSID, &pszSID))
+                __leave;
+            _tprintf(TEXT("\n  ACE SID =\n  \t%s (%s)\n"), pszSID, szName);
+            LocalFree(pszSID);
+        }
+    }
+    __finally {}
+}
+
 
