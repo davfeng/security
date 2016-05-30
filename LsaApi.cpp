@@ -25,6 +25,7 @@ Privileges.
 #include <stdio.h>
 
 #include "ntsecapi.h"
+#include <sddl.h>
 
 NTSTATUS
 OpenPolicy(
@@ -85,6 +86,7 @@ int _cdecl
 main(int argc, char *argv[])
 {
 	LSA_HANDLE PolicyHandle;
+    LPTSTR sid = NULL;
 	WCHAR wComputerName[256] = L"";   // static machine name buffer
 	TCHAR AccountName[256];         // static account name buffer
 	PSID pSid;
@@ -138,6 +140,11 @@ main(int argc, char *argv[])
 		// SID. We can actually add SIDs which cannot be looked up, but
 		// looking up the SID is a good sanity check which is suitable for
 		// most cases.
+
+        //
+        ConvertSidToStringSid(pSid, &sid);
+        _tprintf(TEXT("\n  SID = %s\n"), sid);
+        LocalFree(sid);
 		PrintTrusteePrivs(PolicyHandle, pSid);
 		//
 		// Grant the SeServiceLogonRight to users represented by pSid.
