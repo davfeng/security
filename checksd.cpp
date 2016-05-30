@@ -12,6 +12,7 @@
 #include <tchar.h>
 #include <stdio.h>
 
+#pragma comment(lib, "netapi32.lib")
 //
 // access for network shares.  these are based on the values set by
 // explorer
@@ -69,8 +70,8 @@ void DumpFile(LPTSTR pszFile, TCHAR c)
     //
     // get the size
     //
-    if (!GetFileSecurity(pszFile, si, psd, dwSize, &dwSize)){
-        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER){
+    if (!GetFileSecurity(pszFile, si, psd, dwSize, &dwSize)) {
+        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
             psd = (PSECURITY_DESCRIPTOR)LocalAlloc(LPTR, dwSize);
             if (psd == NULL)
                 DisplayError(GetLastError(), TEXT("LocalAlloc"));
@@ -115,7 +116,7 @@ void DumpKernelObject(LPTSTR pszObject, TCHAR c)
     //
     // obtain a handle
     //
-    switch (c){
+    switch (c) {
     case 'e':
         hObject = OpenEvent(READ_CONTROL | ACCESS_SYSTEM_SECURITY, FALSE, pszObject);
         if (hObject == NULL)
@@ -182,8 +183,8 @@ void DumpKernelObject(LPTSTR pszObject, TCHAR c)
     //
     // obtain the size
     //
-    if (!GetKernelObjectSecurity(hObject, si, psd, dwSize, &dwSize)){
-        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER){
+    if (!GetKernelObjectSecurity(hObject, si, psd, dwSize, &dwSize)) {
+        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
             psd = (PSECURITY_DESCRIPTOR)LocalAlloc(LPTR, dwSize);
             if (psd == NULL)
                 DisplayError(GetLastError(), TEXT("LocalAlloc"));
@@ -304,8 +305,8 @@ void DumpPrinter(LPTSTR pszPrinter)
     //
     // get the size
     //
-    if (!GetPrinter(hPrinter, 3, (LPBYTE)ppi3, dwSize, &dwSize)){
-        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER){
+    if (!GetPrinter(hPrinter, 3, (LPBYTE)ppi3, dwSize, &dwSize)) {
+        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
             ppi3 = (PPRINTER_INFO_3)LocalAlloc(LPTR, dwSize);
             if (ppi3 == NULL)
                 DisplayError(GetLastError(), TEXT("LocalAlloc"));
@@ -374,11 +375,11 @@ void DumpRegistryKey(LPTSTR pszKey)
     // find the subkey
     //
     pszSubKey = _tcschr(pszKey, '\\');
-    if (pszSubKey == NULL){
+    if (pszSubKey == NULL) {
         lstrcpy(szMainKey, pszKey);
         si = OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
     }
-    else{
+    else {
         pszSubKey++;
 
         //
@@ -392,19 +393,19 @@ void DumpRegistryKey(LPTSTR pszKey)
     //
     // parse the main key
     //
-    if (!lstrcmp(szMainKey, TEXT("HKEY_LOCAL_MACHINE"))){
+    if (!lstrcmp(szMainKey, TEXT("HKEY_LOCAL_MACHINE"))) {
         hMainKey = HKEY_LOCAL_MACHINE;
     }
-    else if (!lstrcmp(szMainKey, TEXT("HKEY_CLASSES_ROOT"))){
+    else if (!lstrcmp(szMainKey, TEXT("HKEY_CLASSES_ROOT"))) {
         hMainKey = HKEY_CLASSES_ROOT;
     }
-    else if (!lstrcmp(szMainKey, TEXT("HKEY_USERS"))){
+    else if (!lstrcmp(szMainKey, TEXT("HKEY_USERS"))) {
         hMainKey = HKEY_USERS;
     }
-    else if (!lstrcmp(szMainKey, TEXT("HKEY_CURRENT_USER"))){
+    else if (!lstrcmp(szMainKey, TEXT("HKEY_CURRENT_USER"))) {
         hMainKey = HKEY_CURRENT_USER;
     }
-    else if (!lstrcmp(szMainKey, TEXT("HKEY_CLASSES_ROOT"))){
+    else if (!lstrcmp(szMainKey, TEXT("HKEY_CLASSES_ROOT"))) {
         hMainKey = HKEY_CLASSES_ROOT;
     }
     else
@@ -413,7 +414,7 @@ void DumpRegistryKey(LPTSTR pszKey)
     //
     // enable the privilege
     //
-    if (pszSubKey != NULL){
+    if (pszSubKey != NULL) {
         Privilege(SE_SECURITY_NAME, TRUE);
         dwAccess |= ACCESS_SYSTEM_SECURITY;
     }
@@ -435,7 +436,7 @@ void DumpRegistryKey(LPTSTR pszKey)
     // get key security information
     //
     lErrorCode = RegGetKeySecurity(hKey, si, psd, &dwSize);
-    if (lErrorCode == ERROR_INSUFFICIENT_BUFFER){
+    if (lErrorCode == ERROR_INSUFFICIENT_BUFFER) {
         //
         // allocate memory for psd
         //
@@ -500,8 +501,8 @@ void DumpService(LPTSTR pszServer, LPTSTR pszService)
     //
     // obtain the size
     //
-    if (!QueryServiceObjectSecurity(schService, si, psd, dwSize, &dwSize)){
-        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER){
+    if (!QueryServiceObjectSecurity(schService, si, psd, dwSize, &dwSize)) {
+        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
             psd = (PSECURITY_DESCRIPTOR)LocalAlloc(LPTR, dwSize);
             if (psd == NULL)
                 DisplayError(GetLastError(), TEXT("LocalAlloc"));
@@ -550,7 +551,7 @@ void DumpUserObject(LPTSTR pszObject, TCHAR c)
     //
     // obtain a handle
     //
-    switch (c){
+    switch (c) {
     case 'w':
         hObject = OpenWindowStation(pszObject, FALSE, READ_CONTROL | ACCESS_SYSTEM_SECURITY);
         if (hObject == NULL)
@@ -608,8 +609,8 @@ void DumpUserObject(LPTSTR pszObject, TCHAR c)
     //
     // obtain the size
     //
-    if (!GetUserObjectSecurity(hObject, &si, psd, dwSize, &dwSize)){
-        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER){
+    if (!GetUserObjectSecurity(hObject, &si, psd, dwSize, &dwSize)) {
+        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
             psd = (PSECURITY_DESCRIPTOR)LocalAlloc(LPTR, dwSize);
             if (psd == NULL)
                 DisplayError(GetLastError(), TEXT("LocalAlloc"));
@@ -669,7 +670,7 @@ BOOL ConvertSid(PSID pSid, LPTSTR pszSidText, LPDWORD dwBufferLen)
     // check provided buffer length.
     // If not large enough, indicate proper size and setlasterror
     //
-    if (*dwBufferLen < dwSidSize){
+    if (*dwBufferLen < dwSidSize) {
         *dwBufferLen = dwSidSize;
         SetLastError(ERROR_INSUFFICIENT_BUFFER);
         return FALSE;
@@ -683,7 +684,7 @@ BOOL ConvertSid(PSID pSid, LPTSTR pszSidText, LPDWORD dwBufferLen)
     //
     // prepare SidIdentifierAuthority
     //
-    if ((psia->Value[0] != 0) || (psia->Value[1] != 0)){
+    if ((psia->Value[0] != 0) || (psia->Value[1] != 0)) {
         dwSidSize += wsprintf(pszSidText + lstrlen(pszSidText),
             TEXT("0x%02hx%02hx%02hx%02hx%02hx%02hx"),
             (USHORT)psia->Value[0],
@@ -693,7 +694,7 @@ BOOL ConvertSid(PSID pSid, LPTSTR pszSidText, LPDWORD dwBufferLen)
             (USHORT)psia->Value[4],
             (USHORT)psia->Value[5]);
     }
-    else{
+    else {
         dwSidSize += wsprintf(pszSidText + lstrlen(pszSidText),
             TEXT("%lu"),
             (ULONG)(psia->Value[5]) +
@@ -705,7 +706,7 @@ BOOL ConvertSid(PSID pSid, LPTSTR pszSidText, LPDWORD dwBufferLen)
     //
     // loop through SidSubAuthorities
     //
-    for (dwCounter = 0; dwCounter < dwSubAuthorities; dwCounter++){
+    for (dwCounter = 0; dwCounter < dwSubAuthorities; dwCounter++) {
         dwSidSize += wsprintf(pszSidText + dwSidSize, TEXT("-%lu"),
             *GetSidSubAuthority(pSid, dwCounter));
     }
@@ -745,8 +746,8 @@ BOOL Privilege(LPTSTR pszPrivilege, BOOL bEnable)
     //
     // obtain the token, first check the thread and then the process
     //
-    if (!OpenThreadToken(GetCurrentThread(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, TRUE, &hToken)){
-        if (GetLastError() == ERROR_NO_TOKEN){
+    if (!OpenThreadToken(GetCurrentThread(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, TRUE, &hToken)) {
+        if (GetLastError() == ERROR_NO_TOKEN) {
             if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
                 return FALSE;
         }
@@ -823,22 +824,22 @@ void LookupAccountOtherSid(PSID psidCheck, LPTSTR pszName, LPDWORD pcbName, LPTS
 
     *psnu = SidTypeAlias;
 
-    for (i = 0; i < 4; i++){
-        if (EqualSid(psidCheck, psid[i])){
+    for (i = 0; i < 4; i++) {
+        if (EqualSid(psidCheck, psid[i])) {
             lstrcpy(pszName, szName[i]);
             lstrcpy(pszDomain, TEXT("BUILTIN"));
             break;
         }
     }
 
-    if (EqualPrefixSid(psidCheck, psidLogonSid)){
+    if (EqualPrefixSid(psidCheck, psidLogonSid)) {
         lstrcpy(pszName, TEXT("LOGON SID"));
     }
 
     //
     // free the sids
     //
-    for (i = 0; i<4; i++){
+    for (i = 0; i<4; i++) {
         FreeSid(psid[i]);
     }
 
@@ -862,14 +863,14 @@ DWORD DumpAclInfo(PACL pacl, BOOL bDacl)
     _tprintf(TEXT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n"));
     _tprintf(TEXT("valid .............. "));
 
-    if (!IsValidAcl(pacl)){
+    if (!IsValidAcl(pacl)) {
         _tprintf(TEXT("no\n"));
         return 0;
     }
     else
         _tprintf(TEXT("yes\n"));
 
-    for (aic = 1; aic<3; aic++){
+    for (aic = 1; aic<3; aic++) {
         if (!GetAclInformation(pacl, (LPVOID)pByte[aic - 1], sizeof(ACL_SIZE_INFORMATION), (ACL_INFORMATION_CLASS)aic))
             DisplayError(GetLastError(), TEXT("GetAclInformation"));
     }
@@ -935,29 +936,29 @@ void DumpDacl(PSECURITY_DESCRIPTOR psd, TCHAR c, BOOL bDacl)
     TCHAR               szSidText[256];
     TCHAR               szSidType[][17] = { TEXT("User"), TEXT("Group"), TEXT("Domain"), TEXT("Alias"), TEXT("Well Known Group"), TEXT("Deleted Account"), TEXT("Invalid"), TEXT("Unknown") };
 
-    if (bDacl){
+    if (bDacl) {
         if (!GetSecurityDescriptorDacl(psd, &bDaclPresent, &pacl, &bDaclDefaulted))
             DisplayError(GetLastError(), TEXT("GetSecurityDescriptorDacTEXT("));
     }
-    else{
+    else {
         if (!GetSecurityDescriptorSacl(psd, &bDaclPresent, &pacl, &bDaclDefaulted))
             DisplayError(GetLastError(), TEXT("GetSecurityDescriptorSacTEXT("));
     }
 
-    if (bDaclPresent){
+    if (bDaclPresent) {
         //
         // dump the dacl
         //
-        if (pacl == NULL){
+        if (pacl == NULL) {
             if (bDacl)
                 _tprintf(TEXT("\ndacl ............... NULL\n"));
             else
                 _tprintf(TEXT("\nsacl ............... NULL\n"));
         }
-        else{
+        else {
             dwAceCount = DumpAclInfo(pacl, bDacl);
 
-            for (i = 0; i < (int)dwAceCount; i++){
+            for (i = 0; i < (int)dwAceCount; i++) {
                 if (!GetAce(pacl, i, (LPVOID*)&pace))
                     DisplayError(GetLastError(), TEXT("GetAce"));
 
@@ -966,7 +967,7 @@ void DumpDacl(PSECURITY_DESCRIPTOR psd, TCHAR c, BOOL bDacl)
                 _tprintf(TEXT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n"));
                 _tprintf(TEXT("type ............... "));
 
-                switch (pace->Header.AceType){
+                switch (pace->Header.AceType) {
                 case ACCESS_ALLOWED_ACE_TYPE:
                     _tprintf(TEXT("ACCESS_ALLOWED_ACE\n"));
                     break;
@@ -1013,7 +1014,7 @@ void DumpDacl(PSECURITY_DESCRIPTOR psd, TCHAR c, BOOL bDacl)
                 _tprintf(TEXT("size ............... %u byte(s)\n"), pace->Header.AceSize);
                 _tprintf(TEXT("mask ............... 0x%X\n"), pace->Mask);
 
-                switch (c){
+                switch (c) {
                 case 'r':
                     //
                     // registry SPECIFIC access rights
@@ -1270,7 +1271,7 @@ void DumpDacl(PSECURITY_DESCRIPTOR psd, TCHAR c, BOOL bDacl)
                 ZeroMemory(szName, cbName);
                 ZeroMemory(szReferencedDomainName, cbReferencedDomainName);
 
-                if (!LookupAccountSid(NULL, &(pace->SidStart), szName, &cbName, szReferencedDomainName, &cbReferencedDomainName, &snu)){
+                if (!LookupAccountSid(NULL, &(pace->SidStart), szName, &cbName, szReferencedDomainName, &cbReferencedDomainName, &snu)) {
                     if (GetLastError() == ERROR_NONE_MAPPED)
                         LookupAccountOtherSid(&(pace->SidStart), szName, &cbName, szReferencedDomainName, &cbReferencedDomainName, &snu);
                     else
@@ -1287,7 +1288,7 @@ void DumpDacl(PSECURITY_DESCRIPTOR psd, TCHAR c, BOOL bDacl)
             }
         }
     }
-    else{
+    else {
         _tprintf(TEXT("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"));
         if (bDacl)
             _tprintf(TEXT(">>                 NO DACL PRESENT                     >>\n"));
@@ -1313,12 +1314,12 @@ void DumpOwnerGroup(PSECURITY_DESCRIPTOR psd, BOOL bOwner)
     DWORD        dwSize = sizeof(szSidText);
     TCHAR        szType[6] = TEXT("");
 
-    if (bOwner){
+    if (bOwner) {
         if (!GetSecurityDescriptorOwner(psd, &psid, &bOwnerDefaulted))
             DisplayError(GetLastError(), TEXT("GetSecurityDescriptorOwner"));
         lstrcpy(szType, TEXT("owner"));
     }
-    else{
+    else {
         if (!GetSecurityDescriptorGroup(psd, &psid, &bOwnerDefaulted))
             DisplayError(GetLastError(), TEXT("GetSecurityDescriptorGroup"));
         lstrcpy(szType, TEXT("group"));
@@ -1326,14 +1327,14 @@ void DumpOwnerGroup(PSECURITY_DESCRIPTOR psd, BOOL bOwner)
 
     if (psid == NULL)
         _tprintf(TEXT("%s .............. none\n"), szType);
-    else{
+    else {
         ZeroMemory(szName, cbName);
         ZeroMemory(szReferencedDomainName, cbReferencedDomainName);
 
         //
         // get the owner of the sid
         //
-        if (!LookupAccountSid(NULL, psid, szName, &cbName, szReferencedDomainName, &cbReferencedDomainName, &snu)){
+        if (!LookupAccountSid(NULL, psid, szName, &cbName, szReferencedDomainName, &cbReferencedDomainName, &snu)) {
             if (GetLastError() != ERROR_NONE_MAPPED)
                 DisplayError(GetLastError(), TEXT("LookupAccountSid"));
         }
@@ -1389,7 +1390,7 @@ void DumpSDInfo(PSECURITY_DESCRIPTOR psd)
     _tprintf(TEXT(">>          SECURITY DESCRIPTOR INFORMATION            >>\n"));
     _tprintf(TEXT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\nvalid .............. "));
 
-    if (!IsValidSecurityDescriptor(psd)){
+    if (!IsValidSecurityDescriptor(psd)) {
         _tprintf(TEXT("no\n"));
         return;
     }
@@ -1432,7 +1433,7 @@ int _tmain(int argc, TCHAR *argv[])
     //
     // display usage
     //
-    if (argc != 3){
+    if (argc != 3) {
         DisplayUsage();
         return 0;
     }
